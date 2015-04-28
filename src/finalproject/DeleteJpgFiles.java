@@ -12,11 +12,11 @@ public class DeleteJpgFiles {
 		FileFilter fileFilter = new FileFilter(deleteExtension);
 		File parentDir = new File(parentDirectory);
 
-		// Put the names of all files ending with .txt in a String array
+		// Put the names of all files ending with .jpg in a String array
 		String[] listOfTextFiles = parentDir.list(fileFilter);
 
 		if (listOfTextFiles.length == 0) {
-			System.out.println("There are no text files in this direcotry!");
+			System.out.println("There are no jpg files in this direcotry!");
 			return;
 		}
 
