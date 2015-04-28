@@ -3,41 +3,47 @@ package finalproject;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.Callable;
+import java.util.concurrent.BlockingQueue;
+
 import javax.imageio.ImageIO;
 
 /**
  *
  * 
  */
-public class AlterImageTask implements Callable {
+public class AlterImageTask implements Runnable {
 
-    private final String fileName;
+    private String fileName;
+    private final BlockingQueue<String> sharedQueue;
 
-    public AlterImageTask(String fileName) {
-        this.fileName = fileName;
+    public AlterImageTask(BlockingQueue<String> sharedQueue) {
+        this.sharedQueue = sharedQueue;
     }
 
     @Override
-    public Object call() throws Exception {
-        BufferedImage img = null;
-        try {
-            img = ImageIO.read(new File(fileName));
+    public void run() {
+    	
+    	while(true){
+    		try {
+    			fileName = sharedQueue.take();
+    			BufferedImage img = null;
 
-            BufferedImage blackAndWhiteImg = new BufferedImage(
-                    img.getWidth(), img.getHeight(),
-                    BufferedImage.TYPE_BYTE_BINARY);
+    			img = ImageIO.read(new File(fileName));
 
-            Graphics2D graphics = blackAndWhiteImg.createGraphics();
-            graphics.drawImage(img, 0, 0, null);
-            String bwFileName = "bw_" + fileName;
-            ImageIO.write(blackAndWhiteImg, "jpg", new File(bwFileName));
-            System.out.println("Writing image..." + bwFileName);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return this;
+    			BufferedImage blackAndWhiteImg = new BufferedImage(
+    					img.getWidth(), img.getHeight(),
+    					BufferedImage.TYPE_BYTE_BINARY);
+
+    			Graphics2D graphics = blackAndWhiteImg.createGraphics();
+    			graphics.drawImage(img, 0, 0, null);
+    			String bwFileName = "bw_" + fileName;
+    			ImageIO.write(blackAndWhiteImg, "jpg", new File(bwFileName));
+    			System.out.println("Writing image..." + bwFileName);
+    		} catch (Exception ex) {
+    			ex.printStackTrace();
+    		}
+    	}
+
     }
 
 }//end of class()

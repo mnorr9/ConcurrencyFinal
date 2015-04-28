@@ -7,10 +7,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -31,7 +31,6 @@ public class FinalExam {
         // downloads are still processing.  This is a true producer 
         // consumer problem that can be sectioned into different 
         // easy to accomplish parts.	 
-        List<Future> futuresList = new ArrayList<Future>();
 
         ExecutorService exec = null;
 
@@ -43,32 +42,23 @@ public class FinalExam {
         // Get the list of the file names
         //****************************
         ArrayList<String> fileNameList = buildUrlList();
+        
+        //Creating shared object
+        BlockingQueue<String> sharedQueue = new ArrayBlockingQueue<String>(fileNameList.size());
 
         //****************************
         // Download all images
         //****************************
-        for (String fileName : fileNameList) {
-            futuresList.add(exec.submit(new SaveImageTask(fileName)));
-            
-            while (!futuresList.isEmpty()) {
-
-                for (int i = 0; i < (futuresList.size()); i++) {
-                    Future future = futuresList.get(i);
-
-                    if ((future != null) && (future.isDone())) {
-                        futuresList.remove(i);
-                        SaveImageTask task;
-                        task = (SaveImageTask) future.get();
-                        exec.submit(new AlterImageTask(task.getFilename()));
-                        break;
-                    }
-                    i++;
-                }
-            }//end of while loop
-        }
-
         
-
+        // Start consumer
+        exec.submit(new AlterImageTask(sharedQueue));
+        
+        // Start producer
+        for (String fileName : fileNameList) {
+            exec.submit(new SaveImageTask(fileName, sharedQueue)); 
+            
+        }
+        
         exec.shutdown();
 
     }//end of main()
