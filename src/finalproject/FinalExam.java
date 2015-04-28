@@ -21,6 +21,9 @@ public class FinalExam {
     private static final String URL_PATH = "http://elvis.rowan.edu/~mckeep82/ccpsp15/Astronomy/";
 
     public static void main(String[] args) throws Exception {
+    	
+    	// Delete all JPG files
+    	DeleteJpgFiles.delJpg();
 
         // A true concurrent solution will begin altering images 
         // while the others are still downloading and will perhaps 
