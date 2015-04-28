@@ -7,13 +7,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,7 +19,6 @@ import org.jsoup.nodes.Element;
 public class FinalExam {
 
     private static final String URL_PATH = "http://elvis.rowan.edu/~mckeep82/ccpsp15/Astronomy/";
-    private static Collection<String> localFileList = Collections.synchronizedCollection(new ArrayList<String>());
 
     public static void main(String[] args) throws Exception {
 
@@ -32,7 +28,7 @@ public class FinalExam {
         // downloads are still processing.  This is a true producer 
         // consumer problem that can be sectioned into different 
         // easy to accomplish parts.	 
-        List<Future> futuresList = new ArrayList<>();
+        List<Future> futuresList = new ArrayList<Future>();
 
         ExecutorService exec = null;
 
@@ -45,28 +41,30 @@ public class FinalExam {
         //****************************
         ArrayList<String> fileNameList = buildUrlList();
 
-	//****************************
+        //****************************
         // Download all images
         //****************************
         for (String fileName : fileNameList) {
             futuresList.add(exec.submit(new SaveImageTask(fileName)));
+            
+            while (!futuresList.isEmpty()) {
+
+                for (int i = 0; i < (futuresList.size()); i++) {
+                    Future future = futuresList.get(i);
+
+                    if ((future != null) && (future.isDone())) {
+                        futuresList.remove(i);
+                        SaveImageTask task;
+                        task = (SaveImageTask) future.get();
+                        exec.submit(new AlterImageTask(task.getFilename()));
+                        break;
+                    }
+                    i++;
+                }
+            }//end of while loop
         }
 
-        while (!futuresList.isEmpty()) {
-
-            for (int i = 0; i < (futuresList.size()); i++) {
-                Future future = futuresList.get(i);
-
-                if ((future != null) && (future.isDone())) {
-                    futuresList.remove(i);
-                    SaveImageTask task;
-                    task = (SaveImageTask) future.get();
-                    exec.submit(new AlterImageTask(task.getFilename()));
-                    break;
-                }
-                i++;
-            }
-        }//end of while loop
+        
 
         exec.shutdown();
 
