@@ -7,10 +7,12 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -52,21 +54,28 @@ public class FinalExam {
         ArrayList<String> fileNameList = buildUrlList();
         
         //Creating shared object
-        BlockingQueue<String> sharedQueue = new ArrayBlockingQueue<String>(fileNameList.size());
-
+        BlockingQueue<String> completedDownloads = new ArrayBlockingQueue<>(fileNameList.size());
+        
+        HashMap<String, Future> futures = new HashMap<>();
+        
         //****************************
         // Download all images
         //****************************
         
-        // Start consumer
-        exec.submit(new AlterImageTask(sharedQueue));
+
         
         // Start producer
         for (String fileName : fileNameList) {
-            exec.submit(new SaveImageTask(fileName, sharedQueue)); 
-            
+                Future<?> future = exec.submit(new SaveImageTask(fileName, completedDownloads));
+                futures.put(fileName, future);
         }
         
+        // Start consumer
+        for (String fileName : fileNameList) {
+            exec.execute(new AlterImageTask(fileName, futures));
+        }        
+
+       
         exec.shutdown();
 
     }//end of main()
@@ -103,7 +112,6 @@ public class FinalExam {
             }
             inputStream.close();
         } catch (IOException ex) {
-            ex.printStackTrace();
         }
 
         return urlList;
@@ -132,4 +140,6 @@ public class FinalExam {
     } //end parseHtml() method
 
 
+
+    
 }//end of class
