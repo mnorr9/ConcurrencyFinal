@@ -30,7 +30,7 @@ public class AlterImageTask implements Runnable {
 
         try {
 
-            // Wait/Block until computation is done!
+            // Wait/Block until the saving task is done!
             futures.get(fileName).get();
 
             BufferedImage img = null;

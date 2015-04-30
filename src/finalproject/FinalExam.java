@@ -53,7 +53,7 @@ public class FinalExam {
         //****************************
         ArrayList<String> fileNameList = buildUrlList();
         
-        //Creating shared object
+        //Creating blockingQueue of completed downloads. 
         BlockingQueue<String> completedDownloads = new ArrayBlockingQueue<>(fileNameList.size());
         
         HashMap<String, Future> futures = new HashMap<>();
@@ -70,12 +70,18 @@ public class FinalExam {
                 futures.put(fileName, future);
         }
         
-        // Start consumer
-        for (String fileName : fileNameList) {
+        /** Start consumer. In this case, the consumer knows, before hand, how 
+         * many items it will need to alter. It just wait, until the first 
+         * download appears in the queue. it exist the loop once all images are
+         * processed. 
+        */
+        for(String loop : fileNameList) {
+            String fileName = completedDownloads.take();
             exec.execute(new AlterImageTask(fileName, futures));
-        }        
+        }       
 
-       
+        // Waits until all tasks are completed before graciously shuting down
+        // the executor
         exec.shutdown();
 
     }//end of main()
