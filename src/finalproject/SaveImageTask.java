@@ -1,6 +1,7 @@
 
 package finalproject;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,7 +43,7 @@ public class SaveImageTask implements Runnable {
 
     		byte[] b = new byte[2048];
     		int length;
-
+                
     		while ((length = is.read(b)) != -1) {
     			os.write(b, 0, length);
     		}
@@ -52,11 +53,21 @@ public class SaveImageTask implements Runnable {
 
     		// Add fileName to shared Queue
     		sharedQueue.add(fileName);
-    		System.out.println("Saving..."+fileName);
+    		System.out.println("Saving..."+fileName + "; size: " + length);
     	} catch (Exception ex) {
     		ex.printStackTrace();
     	}
 
     }
     
+    private double getSize(String filename){
+        File file =new File(filename);
+        double kilobytes = 0;
+        
+        if(file.exists()){
+            double bytes = file.length();
+            kilobytes = (bytes / 1024);
+        }
+        return kilobytes;
+    }
 }//end of class

@@ -70,15 +70,16 @@ public class FinalExam {
                 futures.put(fileName, future);
         }
         
-        /** Start consumer. In this case, the consumer knows, before hand, how 
-         * many items it will need to alter. It just wait, until the first 
+        /**
+         * Start consumer. In this case, the consumer knows, before hand, how
+         * many items it will need to alter. It just wait, until the first
          * download appears in the queue. it exits the loop once all images are
-         * processed. 
-        */
-        for(String loop : fileNameList) {
+         * processed.
+         */
+        for (String loop : fileNameList) {
             String fileName = completedDownloads.take();
             exec.execute(new AlterImageTask(fileName, futures));
-        }       
+        }      
 
         // Waits until all tasks are completed before graciously shuting down
         // the executor
