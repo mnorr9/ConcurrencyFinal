@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
@@ -30,8 +32,12 @@ public class AlterImageTask implements Runnable {
 
         try {
 
-            // Wait/Block until the saving task is done!
-            futures.get(fileName).get();
+            try {
+                // Wait/Block until the saving task is done!
+                futures.get(fileName).get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(AlterImageTask.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
             BufferedImage img = null;
 
@@ -46,7 +52,7 @@ public class AlterImageTask implements Runnable {
             String bwFileName = "bw_" + fileName;
             ImageIO.write(blackAndWhiteImg, "jpg", new File(bwFileName));
             System.out.println("Writing image..." + bwFileName + "; size: " + getSize(fileName) + "kb");
-        } catch (InterruptedException | ExecutionException | IOException ex) {
+        } catch (IOException ex) {
         }
 
     }//end of run();

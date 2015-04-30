@@ -7,12 +7,16 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,13 +39,13 @@ import org.jsoup.nodes.Element;
 public class FinalExam {
 
     private static final String URL_PATH = "http://elvis.rowan.edu/~mckeep82/ccpsp15/Astronomy/";
-
+    private static ExecutorService exec = null;
     public static void main(String[] args) throws Exception {
     	
     	// Delete all JPG files
     	DeleteJpgFiles.delJpg();
 	 
-        ExecutorService exec = null;
+        //ExecutorService exec = null;
 
         //Determines the number of threads to use by finding out how many processors are available
         //and then adding 1
@@ -61,14 +65,39 @@ public class FinalExam {
         //****************************
         // Download all images
         //****************************
-        
+        Collection<Callable<String>> callables = new ArrayList<Callable<String>>(); 
+                
+        callables.add(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                System.out.println("Consumer waiting...");
+                for (String loop : fileNameList) {
+                    try {
+                        String fileName = completedDownloads.take();
+                        exec.execute(new AlterImageTask(fileName, futures));
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(FinalExam.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                return null;
+            }
+        });
+
+        callables.add(new Callable() {
+
+            @Override
+            public Object call() throws Exception {
+                for (String fileName : fileNameList) {
+                    Future<?> future = exec.submit(new SaveImageTask(fileName, completedDownloads));
+                    futures.put(fileName, future);
+                }
+                return null;
+            }
+        });
 
         
         // Start producer
-        for (String fileName : fileNameList) {
-                Future<?> future = exec.submit(new SaveImageTask(fileName, completedDownloads));
-                futures.put(fileName, future);
-        }
+
         
         /**
          * Start consumer. In this case, the consumer knows, before hand, how
@@ -76,11 +105,13 @@ public class FinalExam {
          * download appears in the queue. it exits the loop once all images are
          * processed.
          */
-        for (String loop : fileNameList) {
-            String fileName = completedDownloads.take();
-            exec.execute(new AlterImageTask(fileName, futures));
-        }      
+//        for (String loop : fileNameList) {
+//            String fileName = completedDownloads.take();
+//            exec.execute(new AlterImageTask(fileName, futures));
+//        }      
 
+        exec.invokeAll(callables);
+        
         // Waits until all tasks are completed before graciously shuting down
         // the executor
         exec.shutdown();
