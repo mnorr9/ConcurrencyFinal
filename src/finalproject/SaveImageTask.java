@@ -53,19 +53,19 @@ public class SaveImageTask implements Runnable {
 
     		// Add fileName to shared Queue
     		sharedQueue.add(fileName);
-    		System.out.println("Saving..."+fileName + "; size: " + length);
+    		System.out.println("Saving..."+fileName + "; size: " + getSize(fileName) + "kb");
     	} catch (Exception ex) {
     		ex.printStackTrace();
     	}
 
     }
     
-    private double getSize(String filename){
+    private long getSize(String filename){
         File file =new File(filename);
-        double kilobytes = 0;
+        long kilobytes = 0;
         
         if(file.exists()){
-            double bytes = file.length();
+            long bytes = file.length();
             kilobytes = (bytes / 1024);
         }
         return kilobytes;

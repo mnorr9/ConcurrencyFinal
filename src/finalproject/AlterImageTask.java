@@ -45,10 +45,21 @@ public class AlterImageTask implements Runnable {
             graphics.drawImage(img, 0, 0, null);
             String bwFileName = "bw_" + fileName;
             ImageIO.write(blackAndWhiteImg, "jpg", new File(bwFileName));
-            System.out.println("Writing image..." + bwFileName);
+            System.out.println("Writing image..." + bwFileName + "; size: " + getSize(fileName) + "kb");
         } catch (InterruptedException | ExecutionException | IOException ex) {
         }
 
     }//end of run();
 
+    private long getSize(String filename) {
+        File file = new File(filename);
+        long kilobytes = 0;
+
+        if (file.exists()) {
+            long bytes = file.length();
+            kilobytes = (bytes / 1024);
+        }
+        return kilobytes;
+    }
+    
 }//end of class()
