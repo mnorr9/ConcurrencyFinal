@@ -16,7 +16,7 @@ import javax.imageio.ImageIO;
  */
 public class AlterImageTask implements Runnable {
 
-    private String fileName;
+    private final String fileName;
     private final HashMap<String, Future> futures;
 
     public AlterImageTask(String fileName, HashMap<String, Future> futures) {
