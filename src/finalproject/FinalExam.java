@@ -72,7 +72,7 @@ public class FinalExam {
         
         /** Start consumer. In this case, the consumer knows, before hand, how 
          * many items it will need to alter. It just wait, until the first 
-         * download appears in the queue. it exist the loop once all images are
+         * download appears in the queue. it exits the loop once all images are
          * processed. 
         */
         for(String loop : fileNameList) {
