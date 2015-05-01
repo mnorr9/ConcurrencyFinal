@@ -30,7 +30,7 @@ public class DeleteJpgFiles {
 			//open the files using the absolute file path, and then delete them...
 			fileToDelete = new File(absoluteFilePath);
 			boolean isdeleted = fileToDelete.delete();
-			System.out.println("File : " + absoluteFilePath + " was deleted : " + isdeleted);
+			System.out.println("Deletion : " + absoluteFilePath + " was deleted : " + isdeleted);
 		}
 	}
 }

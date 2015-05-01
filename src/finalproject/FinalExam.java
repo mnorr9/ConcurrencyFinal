@@ -60,7 +60,8 @@ public class FinalExam {
         // processors are available and then adding 1
         int NTHREADS = Runtime.getRuntime().availableProcessors() + 1;
         ExecutorService exec = Executors.newFixedThreadPool(NTHREADS);
-
+        System.out.println("Thread Pool size: " + NTHREADS);
+        
         // BlockingQueue of in progress downloads. 
         BlockingQueue<String> downloads = new ArrayBlockingQueue<>(fileNameList.size());
 

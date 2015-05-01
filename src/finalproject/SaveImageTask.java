@@ -49,7 +49,7 @@ public class SaveImageTask implements Runnable {
     		is.close();
     		os.close();
 
-    		System.out.println("Saving..."+fileName + "; size: " + getSize(fileName) + "kb");
+    		System.out.println("Downloaded : "+fileName + "; size: " + getSize(fileName) + "kb");
     	} catch (Exception ex) {
     		ex.printStackTrace();
     	}

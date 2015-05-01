@@ -47,7 +47,7 @@ public class AlterImageTask implements Runnable {
             graphics.drawImage(img, 0, 0, null);
             String bwFileName = "bw_" + fileName;
             ImageIO.write(blackAndWhiteImg, "jpg", new File(bwFileName));
-            System.out.println("Writing image..." + bwFileName + "; size: " + getSize(fileName) + "kb");
+            System.out.println("Altering : " + bwFileName + "; size: " + getSize(fileName) + "kb");
         } catch (IOException ex) {
         } catch (InterruptedException | ExecutionException ex) {
             Logger.getLogger(AlterImageTask.class.getName()).log(Level.SEVERE, null, ex);
