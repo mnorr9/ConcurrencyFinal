@@ -172,12 +172,14 @@ public class FinalExam {
 
             @Override
             public Object call() throws Exception {
-                for (String fileName : fileNameList) {                    
+                fileNameList.stream().map((fileName) -> {                    
                     Future<?> future = exec.submit(new SaveImageTask(fileName));
                     futures.put(fileName, future);
+                    return fileName;
+                }).forEach((fileName) -> {
                     // In-progress download
                     downloads.add(fileName);
-                }
+                });
                 return null;
             }
         });
