@@ -19,11 +19,11 @@ import javax.imageio.ImageIO;
 public class AlterImageTask implements Runnable {
 
     private final String fileName;
-    private final HashMap<String, Future> futures;
+    private final Future future;
 
-    public AlterImageTask(String fileName, HashMap<String, Future> futures) {
+    public AlterImageTask(String fileName, Future future) {
 
-        this.futures = futures;
+        this.future = future;
         this.fileName = fileName;
     }
 
@@ -32,12 +32,8 @@ public class AlterImageTask implements Runnable {
 
         try {
 
-            try {
-                // Wait/Block until the saving task is done!
-                futures.get(fileName).get();
-            } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(AlterImageTask.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            // Wait/Block until the downloading task is done!
+            future.get();
 
             BufferedImage img = null;
 
@@ -53,6 +49,8 @@ public class AlterImageTask implements Runnable {
             ImageIO.write(blackAndWhiteImg, "jpg", new File(bwFileName));
             System.out.println("Writing image..." + bwFileName + "; size: " + getSize(fileName) + "kb");
         } catch (IOException ex) {
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(AlterImageTask.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }//end of run();

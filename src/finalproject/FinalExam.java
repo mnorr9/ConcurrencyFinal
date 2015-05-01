@@ -155,7 +155,8 @@ public class FinalExam {
             for (String loop : fileNameList) {
 
                 String fileName = completedDownloads.take();
-                exec.execute(new AlterImageTask(fileName, futures));
+                Future future = futures.get(fileName);
+                exec.execute(new AlterImageTask(fileName, future));
 
             }//end of for..loop
             return null;
@@ -171,9 +172,10 @@ public class FinalExam {
 
             @Override
             public Object call() throws Exception {
-                for (String fileName : fileNameList) {
-                    Future<?> future = exec.submit(new SaveImageTask(fileName, completedDownloads));
+                for (String fileName : fileNameList) {                    
+                    Future<?> future = exec.submit(new SaveImageTask(fileName));
                     futures.put(fileName, future);
+                    completedDownloads.add(fileName);
                 }
                 return null;
             }
