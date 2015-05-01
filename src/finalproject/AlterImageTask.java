@@ -58,7 +58,7 @@ public class AlterImageTask implements Runnable {
     }//end of run();
 
     private long getSize(String filename) {
-        File file = new File(filename);
+        File file = new File("bw_"+filename);
         long kilobytes = 0;
 
         if (file.exists()) {
