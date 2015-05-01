@@ -15,8 +15,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -39,77 +37,46 @@ import org.jsoup.nodes.Element;
 public class FinalExam {
 
     private static final String URL_PATH = "http://elvis.rowan.edu/~mckeep82/ccpsp15/Astronomy/";
-    private static ExecutorService exec = null;
+    private static ExecutorService exec;
+    private static Collection<Callable<String>> callables;
+    private static BlockingQueue<String> completedDownloads;
+    private static ArrayList<String> fileNameList;
+    private static HashMap<String, Future> futures;
+    
     public static void main(String[] args) throws Exception {
     	
-    	// Delete all JPG files
-    	DeleteJpgFiles.delJpg();
-	 
-        //ExecutorService exec = null;
-
-        //Determines the number of threads to use by finding out how many processors are available
-        //and then adding 1
-        int NTHREADS = Runtime.getRuntime().availableProcessors() + 1;
-        exec = Executors.newFixedThreadPool(NTHREADS);
-
         //****************************
         // Get the list of the file names
         //****************************
-        ArrayList<String> fileNameList = buildUrlList();
+        fileNameList = buildUrlList();
         
-        //Creating blockingQueue of completed downloads. 
-        BlockingQueue<String> completedDownloads = new ArrayBlockingQueue<>(fileNameList.size());
+        callables = new ArrayList<>(); 
         
-        HashMap<String, Future> futures = new HashMap<>();
-        
-        //****************************
-        // Download all images
-        //****************************
-        Collection<Callable<String>> callables = new ArrayList<Callable<String>>(); 
-                
-        callables.add(new Callable() {
-            @Override
-            public Object call() throws Exception {
-                System.out.println("Consumer waiting...");
-                for (String loop : fileNameList) {
-                    try {
-                        String fileName = completedDownloads.take();
-                        exec.execute(new AlterImageTask(fileName, futures));
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(FinalExam.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-                return null;
-            }
-        });
+    	// Delete all JPG files
+    	DeleteJpgFiles.delJpg();
+	 
 
-        callables.add(new Callable() {
-
-            @Override
-            public Object call() throws Exception {
-                for (String fileName : fileNameList) {
-                    Future<?> future = exec.submit(new SaveImageTask(fileName, completedDownloads));
-                    futures.put(fileName, future);
-                }
-                return null;
-            }
-        });
+        // Determines the number of threads to use by finding out how many 
+        // processors are available and then adding 1
+        int NTHREADS = Runtime.getRuntime().availableProcessors() + 1;
+        exec = Executors.newFixedThreadPool(NTHREADS);
 
         
-        // Start producer
-
+        // BlockingQueue of completed downloads. 
+        completedDownloads = new ArrayBlockingQueue<>(fileNameList.size());
         
-        /**
-         * Start consumer. In this case, the consumer knows, before hand, how
-         * many items it will need to alter. It just wait, until the first
-         * download appears in the queue. it exits the loop once all images are
-         * processed.
-         */
-//        for (String loop : fileNameList) {
-//            String fileName = completedDownloads.take();
-//            exec.execute(new AlterImageTask(fileName, futures));
-//        }      
+        // This hashmap is used by the consumer thread to verify that the file
+        // that is going to be altered has finished downloading. That the task
+        // is done. 
+        futures = new HashMap<>();
+        
 
+         callables.add(getConsumerCallable());
+        
+         callables.add(getProducerCallable());
+
+        // invokeAll is a blocking method. It means – JVM won’t proceed to next 
+        // line until the consumer and producer threads are done.
         exec.invokeAll(callables);
         
         // Waits until all tasks are completed before graciously shuting down
@@ -177,7 +144,37 @@ public class FinalExam {
         return fileName;
     } //end parseHtml() method
 
+    /**
+     * 
+     */
+    private static Callable getConsumerCallable() throws Exception {
+        return ((Callable) () -> {
+            System.out.println("Consumer waiting...");
+            for (String loop : fileNameList) {
+                
+                String fileName = completedDownloads.take();
+                exec.execute(new AlterImageTask(fileName, futures));
+                
+            }//end of for..loop
+            return null;
+        });
+    }//end of getConsumerCallable()
 
+    /**
+     * 
+     */
+    private static Callable getProducerCallable(){
+        return(new Callable() {
 
+            @Override
+            public Object call() throws Exception {
+                for (String fileName : fileNameList) {
+                    Future<?> future = exec.submit(new SaveImageTask(fileName, completedDownloads));
+                    futures.put(fileName, future);
+                }
+                return null;
+            }
+        });        
+    }//end of getProducerCallable();
     
 }//end of class
