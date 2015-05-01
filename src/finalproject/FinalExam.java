@@ -61,8 +61,8 @@ public class FinalExam {
         int NTHREADS = Runtime.getRuntime().availableProcessors() + 1;
         ExecutorService exec = Executors.newFixedThreadPool(NTHREADS);
 
-        // BlockingQueue of completed downloads. 
-        BlockingQueue<String> completedDownloads = new ArrayBlockingQueue<>(fileNameList.size());
+        // BlockingQueue of in progress downloads. 
+        BlockingQueue<String> downloads = new ArrayBlockingQueue<>(fileNameList.size());
 
         // This hashmap is used by the consumer thread to verify that the file
         // that is going to be altered has finished downloading. That the task
@@ -71,9 +71,9 @@ public class FinalExam {
 
         Collection<Callable<String>> callables = new ArrayList<>();
 
-        callables.add(getConsumerCallable(fileNameList, completedDownloads, futures, exec));
+        callables.add(getConsumerCallable(fileNameList, downloads, futures, exec));
 
-        callables.add(getProducerCallable(fileNameList, completedDownloads, futures, exec));
+        callables.add(getProducerCallable(fileNameList, downloads, futures, exec));
 
         // invokeAll is a blocking method. It means – JVM won’t proceed to next 
         // line until the consumer and producer threads are done.
@@ -149,12 +149,12 @@ public class FinalExam {
      *
      */
     private static Callable<String> getConsumerCallable(ArrayList<String> fileNameList,
-            BlockingQueue<String> completedDownloads, HashMap<String, Future> futures, ExecutorService exec) throws Exception {
+            BlockingQueue<String> downloads, HashMap<String, Future> futures, ExecutorService exec) throws Exception {
         return ((Callable) () -> {
             System.out.println("Consumer waiting...");
             for (String loop : fileNameList) {
 
-                String fileName = completedDownloads.take();
+                String fileName = downloads.take();
                 Future future = futures.get(fileName);
                 exec.execute(new AlterImageTask(fileName, future));
 
@@ -167,7 +167,7 @@ public class FinalExam {
      *
      */
     private static Callable<String> getProducerCallable(ArrayList<String> fileNameList,
-            BlockingQueue<String> completedDownloads, HashMap<String, Future> futures, ExecutorService exec) {
+            BlockingQueue<String> downloads, HashMap<String, Future> futures, ExecutorService exec) {
         return (new Callable() {
 
             @Override
@@ -175,7 +175,8 @@ public class FinalExam {
                 for (String fileName : fileNameList) {                    
                     Future<?> future = exec.submit(new SaveImageTask(fileName));
                     futures.put(fileName, future);
-                    completedDownloads.add(fileName);
+                    // In-progress download
+                    downloads.add(fileName);
                 }
                 return null;
             }
