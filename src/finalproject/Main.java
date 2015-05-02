@@ -37,7 +37,7 @@ import org.jsoup.nodes.Element;
  * @author Emmanuel Bonilla
  *
  */
-public class FinalExam {
+public class Main {
 
     private static final String URL_PATH = "http://elvis.rowan.edu/~mckeep82/ccpsp15/Astronomy/";
 
@@ -54,7 +54,7 @@ public class FinalExam {
         ArrayList<String> fileNameList = buildUrlList();
 
         // Delete all JPG files
-        DeleteJpgFiles.delJpg();
+        DeleteImageTask.delJpg();
 
         // Determines the number of threads to use by finding out how many 
         // processors are available and then adding 1
@@ -95,7 +95,7 @@ public class FinalExam {
      * @return urlList - returns a list of .jpg files
      */
     private static ArrayList<String> buildUrlList() {
-        ArrayList<String> urlList = new ArrayList<String>();
+        ArrayList<String> urlList = new ArrayList<>();
 
         try {
             //Sets up the URL PATH
@@ -174,7 +174,7 @@ public class FinalExam {
             @Override
             public Object call() throws Exception {
                 fileNameList.stream().map((fileName) -> {                    
-                    Future<?> future = exec.submit(new SaveImageTask(fileName));
+                    Future<?> future = exec.submit(new DownloadImageTask(fileName));
                     futures.put(fileName, future);
                     return fileName;
                 }).forEach((fileName) -> {

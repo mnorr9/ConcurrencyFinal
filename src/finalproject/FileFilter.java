@@ -13,7 +13,7 @@ import java.io.FilenameFilter;
  */
 public class FileFilter implements FilenameFilter {
 
-	private String fileExtension;
+	private final String fileExtension;
 
 	/**
 	 * Constructor for setting the file extension
