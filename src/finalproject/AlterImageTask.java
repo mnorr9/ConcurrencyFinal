@@ -34,6 +34,9 @@ public class AlterImageTask implements Runnable {
         this.fileName = fileName;
     } //end AlterImageTask()
 
+    /**
+     * Creating runnable to alter image to black and white 
+     */
     @Override
     public void run() {
 
