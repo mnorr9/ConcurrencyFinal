@@ -2,13 +2,14 @@ package finalproject;
 
 
 import java.io.File;
+import java.io.IOException;
 
-public class DeleteJpgFiles {
+public class DeleteImageTask {
 
-	private static String parentDirectory = ".";
-	private static String deleteExtension = ".jpg";
+	private static final String parentDirectory = ".";
+	private static final String deleteExtension = ".jpg";
 
-	public static void delJpg() {
+	public static void delJpg() throws IOException {
 		FileFilter fileFilter = new FileFilter(deleteExtension);
 		File parentDir = new File(parentDirectory);
 
@@ -16,7 +17,7 @@ public class DeleteJpgFiles {
 		String[] listOfTextFiles = parentDir.list(fileFilter);
 
 		if (listOfTextFiles.length == 0) {
-			System.out.println("There are no jpg files in this direcotry!");
+			System.out.println("There are no jpg files in: \'" +  parentDir.getCanonicalPath() + "\'");
 			return;
 		}
 
@@ -30,7 +31,7 @@ public class DeleteJpgFiles {
 			//open the files using the absolute file path, and then delete them...
 			fileToDelete = new File(absoluteFilePath);
 			boolean isdeleted = fileToDelete.delete();
-			System.out.println("Deletion : " + absoluteFilePath + " was deleted : " + isdeleted);
+			System.out.println("Deleted : " + absoluteFilePath );
 		}
 	}
 }

@@ -11,14 +11,14 @@ import java.net.URL;
  *
  * 
  */
-public class SaveImageTask implements Runnable {
+public class DownloadImageTask implements Runnable {
 
     private final String URL_PATH = "http://elvis.rowan.edu/~mckeep82/ccpsp15/Astronomy/";
 
     private final String fileName;
 
     
-    public SaveImageTask(String fileName) {
+    public DownloadImageTask(String fileName) {
         this.fileName = fileName;
 
     }
