@@ -4,6 +4,14 @@ package finalproject;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * This class is used delete images in a certain directory
+ * 
+ * @author Nacer Abreu
+ * @author Michael Norris
+ * @author Emmanuel Bonilla
+ * 
+ */
 public class DeleteImageTask {
 
 	private static final String parentDirectory = ".";
