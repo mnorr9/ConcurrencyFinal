@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * This class is used delete images in a certain directory
+ * This class is used delete images in a parent directory directory
  * 
  * @author Nacer Abreu
  * @author Michael Norris
@@ -40,6 +40,6 @@ public class DeleteImageTask {
 			fileToDelete = new File(absoluteFilePath);
 			boolean isdeleted = fileToDelete.delete();
 			System.out.println("Deleted : " + absoluteFilePath );
-		}
-	}
-}
+		} //end for loop
+	} //end delJpg()
+} //end DeleteImageTask class
