@@ -8,7 +8,11 @@ import java.io.OutputStream;
 import java.net.URL;
 
 /**
- *
+ * This class is used to implement the downloading of files from the given website
+ * 
+ * @author Nacer Abreu
+ * @author Michael Norris
+ * @author Emmanuel Bonilla
  * 
  */
 public class DownloadImageTask implements Runnable {
@@ -17,12 +21,19 @@ public class DownloadImageTask implements Runnable {
 
     private final String fileName;
 
-    
+    /**
+     * Constructor for filename to be downloaded
+     * @param fileName - name of file to be downloaded
+     */
     public DownloadImageTask(String fileName) {
         this.fileName = fileName;
 
     }
     
+    /**
+     * Returns the name of file
+     * @return - returns the name of the file
+     */
     public String getFilename(){
         return fileName;
     }
@@ -34,8 +45,10 @@ public class DownloadImageTask implements Runnable {
     	//****************************
     	try {
 
+    		//sets up the path to which we will be downloading
     		URL	url = new URL(URL_PATH+fileName);
 
+    		//sets up the input and output streams for retrieving and saving the file to be downloaded
     		InputStream is = url.openStream();
     		OutputStream os = new FileOutputStream(fileName);
 
@@ -56,6 +69,11 @@ public class DownloadImageTask implements Runnable {
 
     }
     
+    /**
+     * This method will take a filename and return the size of the file in kilobytes
+     * @param filename - name of file to be processed
+     * @return kilobytes - returns the size of the file in kilobytes
+     */
     private long getSize(String filename){
         File file =new File(filename);
         long kilobytes = 0;
@@ -65,5 +83,5 @@ public class DownloadImageTask implements Runnable {
             kilobytes = (bytes / 1024);
         }
         return kilobytes;
-    }
+    } //end of getSize()
 }//end of class
