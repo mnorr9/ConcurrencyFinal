@@ -179,9 +179,10 @@ public class Main {
                 // the altering task. The altering task calls the .get() method
                 // to wait/block until the task is completed.
                 Future future = futures.get(fileName);
-                // Submit the downloaded file for alteration. 
-                exec.execute(new AlterImageTask(fileName, future));
-
+                if (future != null){
+                    // Submit the downloaded file for alteration. 
+                    exec.execute(new AlterImageTask(fileName, future));
+                }
             }//end of for..loop
             return null;
         });

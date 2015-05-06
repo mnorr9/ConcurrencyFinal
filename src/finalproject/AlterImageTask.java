@@ -62,6 +62,7 @@ public class AlterImageTask implements Runnable {
             System.out.println("Altering : " + bwFileName + "; size: " + getSize(fileName) + "kb");
         } catch (IOException ex) {
         } catch (InterruptedException | ExecutionException ex) {
+            System.err.println("Filename: " + fileName);
             Logger.getLogger(AlterImageTask.class.getName()).log(Level.SEVERE, null, ex);
         }
 
