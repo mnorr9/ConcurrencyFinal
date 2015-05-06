@@ -53,6 +53,9 @@ public class Main {
         //****************************
         ArrayList<String> fileNameList = buildUrlList();
 
+          printStats();
+          
+        
         // Delete all JPG files
         DeleteImageTask.delJpg();
 
@@ -61,6 +64,7 @@ public class Main {
         int NTHREADS = Runtime.getRuntime().availableProcessors() + 1;
         ExecutorService exec = Executors.newFixedThreadPool(NTHREADS);
         System.out.println("Thread Pool size: " + NTHREADS);
+
         
         // BlockingQueue of in progress downloads. 
         BlockingQueue<String> downloads = new ArrayBlockingQueue<>(fileNameList.size());
@@ -76,10 +80,13 @@ public class Main {
 
         callables.add(getProducerCallable(fileNameList, downloads, futures, exec));
 
+      
+        
         // invokeAll is a blocking method. It means – JVM won’t proceed to next 
         // line until the consumer and producer threads are done.
         exec.invokeAll(callables);
 
+        
         // Waits until all tasks are completed before graciously shuting down
         // the executor
         exec.shutdown();
@@ -147,16 +154,32 @@ public class Main {
     } //end parseHtml() method
 
     /**
-     *
+     * This function returns a Callable object that is tasked with altering
+     * all the specified images.
+     * @param fileNameList - array containing the names of the files to be alter.
+     * @param downloads - container holding the names of completed downloads.
+     * @param futures - Hashmap that holds the future/downloading file association. 
+     * @param exec - sole instance of the Executor service
      */
-    private static Callable<String> getConsumerCallable(ArrayList<String> fileNameList,
-            BlockingQueue<String> downloads, HashMap<String, Future> futures, ExecutorService exec) throws Exception {
+    private static Callable<String> getConsumerCallable(
+            ArrayList<String> fileNameList,
+            BlockingQueue<String> downloads,
+            HashMap<String, Future> futures,
+            ExecutorService exec) throws Exception {
+        
+        // Anonymous inner class. Using Lambda Expresion. 
+        // (Needs latest Java compiler)
         return ((Callable) () -> {
-            System.out.println("Consumer waiting...");
-            for (String loop : fileNameList) {
 
+            for (String loop : fileNameList) {
+                // Wait/Blocks until a file is downloaded.    
                 String fileName = downloads.take();
+                // This hashmap will help us locate the future doing the 
+                // downloading for the specified file. This future is sent to 
+                // the altering task. The altering task calls the .get() method
+                // to wait/block until the task is completed.
                 Future future = futures.get(fileName);
+                // Submit the downloaded file for alteration. 
                 exec.execute(new AlterImageTask(fileName, future));
 
             }//end of for..loop
@@ -165,25 +188,61 @@ public class Main {
     }//end of getConsumerCallable()
 
     /**
-     *
+     * This function returns a Callable object that is tasked with downloading
+     * all the images from the specified server.
+     * @param fileNameList - array containing the names of the files to be alter.
+     * @param downloads - container holding the names of completed downloads.
+     * @param futures - Hashmap that holds the future/downloading file association. 
+     * @param exec - sole instance of the Executor service
      */
-    private static Callable<String> getProducerCallable(ArrayList<String> fileNameList,
-            BlockingQueue<String> downloads, HashMap<String, Future> futures, ExecutorService exec) {
+    private static Callable<String> getProducerCallable(
+            ArrayList<String> fileNameList,
+            BlockingQueue<String> downloads, 
+            HashMap<String, Future> futures, 
+            ExecutorService exec) {
+        
+        // Anonymous inner class.
         return (new Callable() {
 
             @Override
             public Object call() throws Exception {
-                fileNameList.stream().map((fileName) -> {                    
+                
+                // Anonymous inner class. Using Lambda Expresion. 
+                fileNameList.stream().map((fileName) -> {
+                    // Submit the filename for downloading
                     Future<?> future = exec.submit(new DownloadImageTask(fileName));
+                    // Associate the future with the filename
                     futures.put(fileName, future);
                     return fileName;
                 }).forEach((fileName) -> {
                     // In-progress download
                     downloads.add(fileName);
                 });
+                // Don't care about the returning object.
                 return null;
             }
         });
     }//end of getProducerCallable();
 
+    /**
+     * Small routine to print some memory statistics.
+     */
+    private static void printStats(){
+        long freeMemory = Runtime.getRuntime().freeMemory()/1048576;
+        long totalMemory = Runtime.getRuntime().totalMemory()/1048576;
+        long maxMemory = Runtime.getRuntime().maxMemory()/1048576;
+        
+        System.out.println("Used Memory   : " + (totalMemory - freeMemory) + " MegaBytes");
+        System.out.println("Free Memory   : " + freeMemory  + " MegaBytes");
+        System.out.println("Total Memory  : " + totalMemory + " MegaBytes");
+        System.out.println("Max Memory    : " + maxMemory   + " MegaBytes");         
+        
+        String s = "name: " + System.getProperty("os.name");
+        s += ", version: " + System.getProperty("os.version");
+        s += ", arch: " + System.getProperty("os.arch");
+        System.out.println("OS=" + s);
+        System.out.println();
+    }
+    
+    
 }//end of class
