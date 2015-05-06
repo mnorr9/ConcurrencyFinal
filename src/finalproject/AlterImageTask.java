@@ -60,8 +60,7 @@ public class AlterImageTask implements Runnable {
             //writes an image in the given format
             ImageIO.write(blackAndWhiteImg, "jpg", new File(bwFileName));
             System.out.println("Altering : " + bwFileName + "; size: " + getSize(fileName) + "kb");
-        } catch (IOException ex) {
-        } catch (InterruptedException | ExecutionException ex) {
+        } catch (IOException | InterruptedException | ExecutionException ex) {
             System.err.println("Filename: " + fileName);
             Logger.getLogger(AlterImageTask.class.getName()).log(Level.SEVERE, null, ex);
         }
